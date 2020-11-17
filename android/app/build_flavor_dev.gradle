@@ -4,7 +4,7 @@ android {
             dimension "app"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
-            manifestPlaceholders = [appName: "FlutterCardOrganize dev"]
+            manifestPlaceholders = [appName: "Card Organizer DEV"]
         }
     }
 }

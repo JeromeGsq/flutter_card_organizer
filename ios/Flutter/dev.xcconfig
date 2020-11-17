@@ -2,5 +2,5 @@
 PRODUCT_BUNDLE_IDENTIFIER=com.toastapp.fluttercardorganizer.dev
 FLUTTER_TARGET=lib/main_dev.dart
 FLUTTER_BUILD_NAME=dev
-APP_NAME=FlutterCardOrganize dev
+APP_NAME=FlutterCardOrganizer dev
 

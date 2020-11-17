@@ -2,7 +2,7 @@ android {
     productFlavors {
         prod {
             dimension "app"
-            manifestPlaceholders = [appName: "FlutterCardOrganize"]
+            manifestPlaceholders = [appName: "Card Organizer"]
         }
     }
 }
