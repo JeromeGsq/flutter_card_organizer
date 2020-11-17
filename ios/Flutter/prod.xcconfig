@@ -1,0 +1,6 @@
+#include "Release.xcconfig"
+PRODUCT_BUNDLE_IDENTIFIER=com.toastapp.fluttercardorganizer
+FLUTTER_TARGET=lib/main_prod.dart
+FLUTTER_BUILD_NAME=prod
+APP_NAME=FlutterCardOrganize
+

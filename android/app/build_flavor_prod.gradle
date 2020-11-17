@@ -1,0 +1,8 @@
+android {
+    productFlavors {
+        prod {
+            dimension "app"
+            manifestPlaceholders = [appName: "FlutterCardOrganize"]
+        }
+    }
+}
