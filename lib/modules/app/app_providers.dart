@@ -1,5 +1,7 @@
 import 'package:flutter_card_organizer/core/config/config.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_card_organizer/core/widgets/navigation.dart';
+import 'package:provider/provider.dart';
 
 class AppProviders extends StatelessWidget {
   const AppProviders({
@@ -15,12 +17,11 @@ class AppProviders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return child;
-    /*
     return MultiProvider(
-      providers: [],
+      providers: [
+        Provider<Routes>(create: (_) => Routes()),
+      ],
       child: child,
     );
-    */
   }
 }

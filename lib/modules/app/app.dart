@@ -46,7 +46,6 @@ class _AppState extends State<App> {
       child: MaterialApp(
         title: widget.config.appName,
         home: const SplashView(),
-        //onGenerateRoute: const DefaultAppRouter().onGenerateRoute,
       ),
     );
   }
