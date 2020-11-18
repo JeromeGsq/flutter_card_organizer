@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_card_organizer/core/widgets/event_listener.dart';
 import 'package:flutter_card_organizer/core/widgets/navigation.dart';
-import 'package:flutter_card_organizer/models/events/navigate_event.dart';
+import 'package:flutter_card_organizer/data/models/events/navigate_event.dart';
 import 'package:flutter_card_organizer/modules/splash/view_model.dart';
 import 'package:provider/provider.dart';
 

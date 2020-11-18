@@ -1,6 +1,8 @@
 import 'package:flutter_card_organizer/core/config/config.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_card_organizer/core/widgets/navigation.dart';
+import 'package:flutter_card_organizer/data/sources/app_ml_kit.dart';
+import 'package:flutter_card_organizer/data/sources/file_picker.dart';
 import 'package:provider/provider.dart';
 
 class AppProviders extends StatelessWidget {
@@ -20,6 +22,8 @@ class AppProviders extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<Routes>(create: (_) => Routes()),
+        Provider<AppFilePicker>(create: (_) => AppFilePicker()),
+        Provider<AppMLKit>(create: (_) => AppMLKit()),
       ],
       child: child,
     );

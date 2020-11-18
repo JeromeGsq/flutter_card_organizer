@@ -1,6 +1,6 @@
 import 'package:flutter_card_organizer/core/notifiers/busy.dart';
 import 'package:flutter_card_organizer/core/view_model.dart';
-import 'package:flutter_card_organizer/models/events/navigate_event.dart';
+import 'package:flutter_card_organizer/data/models/events/navigate_event.dart';
 
 class SplashViewModel extends ViewModel with BusyNotifier {
   double _loadValue = 0;
