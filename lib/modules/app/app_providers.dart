@@ -23,7 +23,7 @@ class AppProviders extends StatelessWidget {
       providers: [
         Provider<Routes>(create: (_) => Routes()),
         Provider<AppFilePicker>(create: (_) => AppFilePicker()),
-        Provider<AppMLKit>(create: (_) => AppMLKit()),
+        Provider<AppProcessImages>(create: (_) => AppProcessImages()),
       ],
       child: child,
     );

@@ -18,10 +18,10 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProxyProvider<AppMLKit, HomeViewModel>(
+    return ChangeNotifierProxyProvider<AppProcessImages, HomeViewModel>(
       create: (_) => HomeViewModel(),
-      update: (_, appMLKit, vm) => vm
-        ..appMLKit = appMLKit
+      update: (_, appProcessImages, vm) => vm
+        ..appProcessImages = appProcessImages
         ..load(),
       child: EventListener<HomeViewModel>(
         listener: (context, event) {},
@@ -54,10 +54,24 @@ class _ViewState extends State<View> {
             highlightColor: Colors.white30,
             splashColor: Colors.white30,
             child: const Icon(
+              Icons.clear,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              viewModel.picture = null;
+            },
+          ),
+          FlatButton(
+            highlightColor: Colors.white30,
+            splashColor: Colors.white30,
+            child: const Icon(
               Icons.straighten_outlined,
               color: Colors.white,
             ),
-            onPressed: () => viewModel.processImage(),
+            onPressed: () async {
+              await viewModel.clipImage();
+              await viewModel.processImage();
+            },
           ),
         ],
       ),
@@ -65,8 +79,8 @@ class _ViewState extends State<View> {
         child: const Icon(Icons.add_photo_alternate),
         tooltip: 'Select a picture to scan',
         onPressed: () async {
-          viewModel.picture = await filePicker.pickPhoto();
-          viewModel.processImage();
+          final picture = await filePicker.pickPhoto();
+          viewModel.picture = picture.readAsBytesSync();
           if (viewModel.picture != null) {
             Fluttertoast.showToast(
               msg: 'You can zoom & pan your picture',
@@ -76,10 +90,10 @@ class _ViewState extends State<View> {
           }
         },
       ),
-      body: viewModel.picture == null
-          ? const Text('Select a picture')
-          : Center(
-              child: InteractiveViewer(
+      body: Center(
+        child: viewModel.picture == null
+            ? const Text('Select a picture to scan.')
+            : InteractiveViewer(
                 boundaryMargin: const EdgeInsets.all(200),
                 minScale: 0.1,
                 constrained: false,
@@ -88,7 +102,7 @@ class _ViewState extends State<View> {
                   recognizedElements: viewModel.recognizedElements,
                 ),
               ),
-            ),
+      ),
     );
   }
 }

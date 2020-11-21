@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_card_organizer/core/view_model.dart';
 import 'package:provider/provider.dart';
 
+// ignore: must_be_immutable
 class EventListener<T extends ViewModel> extends StatefulWidget {
   EventListener({
     Key key,
