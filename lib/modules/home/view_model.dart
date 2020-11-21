@@ -41,7 +41,7 @@ class HomeViewModel extends ViewModel {
     }
   }
 
-  Future<void> clipImage() async {
+  Future<void> clipAndRotateImage() async {
     if (picture == null) {
       return;
     }
@@ -69,7 +69,7 @@ class HomeViewModel extends ViewModel {
 
     print('$left : $top : $right : $bottom');
 
-    final padding = 100;
+    final padding = 0;
 
     picture = await appProcessImages.crop(
       picture,
@@ -80,6 +80,8 @@ class HomeViewModel extends ViewModel {
         bottom + padding,
       ),
     );
+
+    picture = await appProcessImages.rotate(picture, temp);
   }
 
   Future<void> processImage() async {

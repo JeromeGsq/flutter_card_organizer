@@ -47,7 +47,7 @@ class _ViewState extends State<View> {
     final filePicker = Provider.of<AppFilePicker>(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         actions: [
           FlatButton(
@@ -69,7 +69,7 @@ class _ViewState extends State<View> {
               color: Colors.white,
             ),
             onPressed: () async {
-              await viewModel.clipImage();
+              await viewModel.clipAndRotateImage();
               await viewModel.processImage();
             },
           ),
@@ -94,7 +94,7 @@ class _ViewState extends State<View> {
         child: viewModel.picture == null
             ? const Text('Select a picture to scan.')
             : InteractiveViewer(
-                boundaryMargin: const EdgeInsets.all(200),
+                boundaryMargin: const EdgeInsets.all(40),
                 minScale: 0.1,
                 constrained: false,
                 child: TextLabeledImage(

@@ -22,6 +22,12 @@ class RecongnizedImageTextPainter extends CustomPainter {
     ..strokeWidth = 10
     ..style = PaintingStyle.stroke;
 
+  final points = Paint()
+    ..color = Colors.yellow
+    ..isAntiAlias = true
+    ..strokeWidth = 2
+    ..style = PaintingStyle.stroke;
+
   final fill = Paint()
     ..color = Colors.white30
     ..isAntiAlias = true
@@ -49,10 +55,13 @@ class RecongnizedImageTextPainter extends CustomPainter {
       );
     }
 
+    final List<Offset> ps = [];
     for (RecognizedElement element in recognizedElements) {
       canvas.drawRect(element.boundingBox, fill);
       canvas.drawRect(element.boundingBox, outline);
     }
+
+    canvas.drawPoints(ui.PointMode.lines, ps, points);
   }
 
   @override

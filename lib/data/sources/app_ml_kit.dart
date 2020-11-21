@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'dart:math' as math;
 
 import 'package:path/path.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
@@ -13,6 +14,44 @@ class AppProcessImages {
     final option = ImageEditorOption()
       ..addOption(
         ClipOption.fromRect(rect),
+      );
+
+    final result = await ImageEditor.editImage(
+      image: file,
+      imageEditorOption: option,
+    );
+
+    return result;
+  }
+
+  Future<Uint8List> rotate(
+    Uint8List file,
+    List<RecognizedElement> recognizedElements,
+  ) async {
+    final List<Offset> ps = [];
+    for (RecognizedElement element in recognizedElements) {
+      ps.addAll(element.cornerPoints);
+    }
+
+    double middle = 0;
+    double adder = 0;
+
+    for (var i = 0; i < ps.length - 1; i = i = i + 2) {
+      final a = _getRadAngleCorrection(ps[i], ps[i + 1]);
+      if (a != 0) {
+        adder++;
+        if (middle == 0) {
+          middle = a;
+        } else {
+          middle += a;
+        }
+      }
+    }
+    final angle = middle / adder;
+
+    final option = ImageEditorOption()
+      ..addOption(
+        RotateOption.radian(angle),
       );
 
     final result = await ImageEditor.editImage(
@@ -58,5 +97,17 @@ class AppProcessImages {
     }
 
     return elements;
+  }
+
+  double _getRadAngleCorrection(Offset a, Offset b) {
+    final offsetBase = Offset(a.dx, a.dy);
+    final offset1 = Offset(b.dx, b.dy);
+    final offset2 = Offset(b.dx, a.dy);
+
+    final result =
+        math.atan2(offset1.dy - offsetBase.dy, offset1.dx - offsetBase.dx) -
+            math.atan2(offset2.dy - offsetBase.dy, offset2.dx - offsetBase.dx);
+
+    return result < 0 ? result * -1 : result;
   }
 }
