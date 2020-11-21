@@ -14,8 +14,8 @@ class SplashViewModel extends ViewModel with BusyNotifier {
 
   @override
   Future<void> load() async {
-    for (double i = 0; i <= 100; i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 10));
+    for (double i = 0; i <= 10; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 2));
       loadValue = i;
     }
     dispatch(NavigateEvent());

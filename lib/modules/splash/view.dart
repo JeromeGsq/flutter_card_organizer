@@ -41,10 +41,32 @@ class View extends StatelessWidget {
         }
       },
       child: Scaffold(
-        body: Center(
-          child: Text('Loading ${viewModel.loadValue.toString()}%'),
+        body: CustomPaint(
+          size: Size(400, 400),
+          painter: Painter(),
         ),
+        //body: Center(
+        //  child: Text('Loading ${viewModel.loadValue.toString()}%'),
+        //),
       ),
     );
+  }
+}
+
+class Painter extends CustomPainter {
+  @override
+  bool hitTest(Offset position) {
+    print(position);
+    return true;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // TODO: implement paint
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }

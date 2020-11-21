@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "256942037191",
+    "firebase_url": "https://yugioh-ocr-prod.firebaseio.com",
+    "project_id": "yugioh-ocr-prod",
+    "storage_bucket": "yugioh-ocr-prod.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:256942037191:android:f2cde0998118cc7bea86e2",
+        "android_client_info": {
+          "package_name": "com.toastapp.flutter_card_organizer.prod"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "256942037191-9jovf9crcg5u4opetto0sdapeeidkoe7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmAOv6ymlL52qKlunY6M5r6ZhbObLioc0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "256942037191-9jovf9crcg5u4opetto0sdapeeidkoe7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

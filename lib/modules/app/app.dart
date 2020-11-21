@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_card_organizer/core/config/config.dart';
 import 'package:flutter_card_organizer/modules/app/app_providers.dart';
 import 'package:flutter/material.dart';
@@ -25,12 +26,17 @@ class _AppState extends State<App> {
   @override
   void initState() {
     super.initState();
+    _initFirebase();
     if (widget.config.loggerLevel != Level.OFF) {
       _logRecordSubscription = Logger.root.onRecord.listen((record) {
         debugPrint(
             '${record.level.name} ${record.time} [${record.loggerName}]: ${record.message}');
       });
     }
+  }
+
+  Future<void> _initFirebase() async {
+    await Firebase.initializeApp();
   }
 
   @override

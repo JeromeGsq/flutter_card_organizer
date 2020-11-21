@@ -21,6 +21,12 @@ dependencies:
   fluttertoast: ^7.1.1
   image: ^2.1.19
   path_provider: ^1.6.24
+  dio: ^3.0.10  
+  touchable: ^0.2.0
+
+  firebase_core: ^0.5.2
+  firebase_ml_vision: ^0.9.9  
+
 
 dev_dependencies:
   flutter_test:
