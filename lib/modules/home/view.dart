@@ -8,6 +8,7 @@ import 'package:flutter_card_organizer/data/models/recognized_element.dart';
 import 'package:flutter_card_organizer/data/sources/app_ml_kit.dart';
 import 'package:flutter_card_organizer/data/sources/file_picker.dart';
 import 'package:flutter_card_organizer/modules/home/view_model.dart';
+import 'package:flutter_smart_cropper/flutter_smart_cropper.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
@@ -69,7 +70,6 @@ class _ViewState extends State<View> {
               color: Colors.white,
             ),
             onPressed: () async {
-              //await viewModel.clipAndRotateImage();
               await viewModel.processImage();
             },
           ),
@@ -80,6 +80,7 @@ class _ViewState extends State<View> {
         tooltip: 'Select a picture to scan',
         onPressed: () async {
           final picture = await filePicker.pickPhoto();
+          viewModel.path = picture.path;
           viewModel.picture = picture.readAsBytesSync();
           if (viewModel.picture != null) {
             Fluttertoast.showToast(
@@ -100,6 +101,7 @@ class _ViewState extends State<View> {
                 child: TextLabeledImage(
                   picture: viewModel.image,
                   recognizedElements: viewModel.recognizedElements,
+                  rectPoint: viewModel.rectPoint,
                 ),
               ),
       ),
@@ -112,10 +114,12 @@ class TextLabeledImage extends StatelessWidget {
     Key key,
     @required this.picture,
     @required this.recognizedElements,
+    @required this.rectPoint,
   }) : super(key: key);
 
   final ui.Image picture;
   final List<RecognizedElement> recognizedElements;
+  final RectPoint rectPoint;
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +132,7 @@ class TextLabeledImage extends StatelessWidget {
         context: context,
         image: picture,
         recognizedElements: recognizedElements,
+        rectPoint: rectPoint,
       ),
     );
   }

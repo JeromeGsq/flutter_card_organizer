@@ -2,17 +2,20 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
+import 'package:flutter_smart_cropper/flutter_smart_cropper.dart';
 
 class RecongnizedImageTextPainter extends CustomPainter {
   RecongnizedImageTextPainter({
     @required this.context,
     @required this.image,
     @required this.recognizedElements,
+    @required this.rectPoint,
   });
 
   final BuildContext context;
   final ui.Image image;
   final List<RecognizedElement> recognizedElements;
+  final RectPoint rectPoint;
 
   final imagePainter = Paint();
 
@@ -22,10 +25,10 @@ class RecongnizedImageTextPainter extends CustomPainter {
     ..strokeWidth = 10
     ..style = PaintingStyle.stroke;
 
-  final points = Paint()
-    ..color = Colors.yellow
+  final lines = Paint()
+    ..color = Colors.red
     ..isAntiAlias = true
-    ..strokeWidth = 2
+    ..strokeWidth = 20
     ..style = PaintingStyle.stroke;
 
   final fill = Paint()
@@ -55,13 +58,15 @@ class RecongnizedImageTextPainter extends CustomPainter {
       );
     }
 
-    final List<Offset> ps = [];
     for (RecognizedElement element in recognizedElements) {
       canvas.drawRect(element.boundingBox, fill);
       canvas.drawRect(element.boundingBox, outline);
     }
 
-    canvas.drawPoints(ui.PointMode.lines, ps, points);
+    canvas.drawLine(rectPoint.tl, rectPoint.tr, lines);
+    canvas.drawLine(rectPoint.tr, rectPoint.br, lines);
+    canvas.drawLine(rectPoint.br, rectPoint.bl, lines);
+    canvas.drawLine(rectPoint.bl, rectPoint.tl, lines);
   }
 
   @override

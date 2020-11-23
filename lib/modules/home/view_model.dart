@@ -4,9 +4,19 @@ import 'dart:ui';
 import 'package:flutter_card_organizer/core/view_model.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
 import 'package:flutter_card_organizer/data/sources/app_ml_kit.dart';
+import 'package:flutter_smart_cropper/flutter_smart_cropper.dart';
 
 class HomeViewModel extends ViewModel {
   AppProcessImages appProcessImages;
+
+  String _path;
+  String get path => _path;
+  set path(String value) {
+    if (_path != value) {
+      _path = value;
+      notifyListeners();
+    }
+  }
 
   Uint8List _picture;
   Uint8List get picture => _picture;
@@ -21,7 +31,6 @@ class HomeViewModel extends ViewModel {
 
   Image _image;
   Image get image => _image;
-
   Future<void> _loadImage() async {
     if (picture == null) {
       return;
@@ -30,6 +39,15 @@ class HomeViewModel extends ViewModel {
       _image = result;
       notifyListeners();
     });
+  }
+
+  RectPoint _rectPoint;
+  RectPoint get rectPoint => _rectPoint;
+  set rectPoint(RectPoint value) {
+    if (_rectPoint != value) {
+      _rectPoint = value;
+      notifyListeners();
+    }
   }
 
   List<RecognizedElement> _recognizedElements = [];
@@ -41,58 +59,7 @@ class HomeViewModel extends ViewModel {
     }
   }
 
-  Future<void> clipAndRotateImage() async {
-    if (picture == null) {
-      return;
-    }
-
-    final temp = await appProcessImages.recognizeText(
-      picture,
-      image.width,
-      image.height,
-    );
-
-    double left = double.maxFinite;
-    double top = double.maxFinite;
-    double right = 0;
-    double bottom = 0;
-
-    for (var i = 0; i < temp.length; i++) {
-      left = temp[i].boundingBox.left < left ? temp[i].boundingBox.left : left;
-      top = temp[i].boundingBox.top < top ? temp[i].boundingBox.top : top;
-      right =
-          temp[i].boundingBox.right > right ? temp[i].boundingBox.right : right;
-      bottom = temp[i].boundingBox.bottom > bottom
-          ? temp[i].boundingBox.bottom
-          : bottom;
-    }
-
-    // print('$left : $top : $right : $bottom');
-
-    final padding = 0;
-
-    picture = await appProcessImages.crop(
-      picture,
-      Rect.fromLTRB(
-        left - padding,
-        top - padding,
-        right + padding,
-        bottom + padding,
-      ),
-    );
-
-    picture = await appProcessImages.rotate(picture, temp);
-  }
-
   Future<void> processImage() async {
-    //picture = await appProcessImages.bichromie(picture);
-    await appProcessImages.getFirstBlackPixel(image);
-
-    //recognizedElements = [];
-    //recognizedElements = await appProcessImages.recognizeText(
-    //  picture,
-    //  image.width,
-    //  image.height,
-    //);
+    rectPoint = await appProcessImages.getRect(path);
   }
 }
