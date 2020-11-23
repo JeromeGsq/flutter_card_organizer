@@ -69,7 +69,7 @@ class _ViewState extends State<View> {
               color: Colors.white,
             ),
             onPressed: () async {
-              await viewModel.clipAndRotateImage();
+              //await viewModel.clipAndRotateImage();
               await viewModel.processImage();
             },
           ),

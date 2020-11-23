@@ -67,7 +67,7 @@ class HomeViewModel extends ViewModel {
           : bottom;
     }
 
-    print('$left : $top : $right : $bottom');
+    // print('$left : $top : $right : $bottom');
 
     final padding = 0;
 
@@ -85,11 +85,14 @@ class HomeViewModel extends ViewModel {
   }
 
   Future<void> processImage() async {
-    recognizedElements = [];
-    recognizedElements = await appProcessImages.recognizeText(
-      picture,
-      image.width,
-      image.height,
-    );
+    //picture = await appProcessImages.bichromie(picture);
+    await appProcessImages.getFirstBlackPixel(image);
+
+    //recognizedElements = [];
+    //recognizedElements = await appProcessImages.recognizeText(
+    //  picture,
+    //  image.width,
+    //  image.height,
+    //);
   }
 }

@@ -1,8 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
@@ -10,7 +12,10 @@ import 'package:image_editor/image_editor.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AppProcessImages {
-  Future<Uint8List> crop(Uint8List file, Rect rect) async {
+  Future<Uint8List> crop(
+    Uint8List file,
+    Rect rect,
+  ) async {
     final option = ImageEditorOption()
       ..addOption(
         ClipOption.fromRect(rect),
@@ -62,6 +67,73 @@ class AppProcessImages {
     return result;
   }
 
+  List<int> coordinates(int value, int width) {
+    value = value ~/ 4;
+    final x = value % width;
+    final y = value / width;
+
+    return [x.toInt(), y.toInt()];
+  }
+
+  Future<Uint8List> bichromie(
+    Uint8List file,
+  ) async {
+    const double grayBalance = 86;
+    const amount = -128;
+    final option = ImageEditorOption()
+      ..addOption(
+        ColorOption.contrast(1.1),
+      )
+      ..addOption(
+        ColorOption(
+          matrix: [
+            grayBalance,
+            grayBalance,
+            grayBalance,
+            0,
+            amount * 255.0,
+            grayBalance,
+            grayBalance,
+            grayBalance,
+            0,
+            amount * 255.0,
+            grayBalance,
+            grayBalance,
+            grayBalance,
+            0,
+            amount * 255.0,
+            0,
+            0,
+            0,
+            1,
+            0,
+          ],
+        ),
+      );
+
+    return ImageEditor.editImage(
+      image: file,
+      imageEditorOption: option,
+    );
+  }
+
+  Future<List<int>> getFirstBlackPixel(
+    ui.Image image,
+  ) async {
+    final pixels = await image.toByteData();
+
+    for (int i = 0; i < pixels.lengthInBytes; i += 4) {
+      // Look at red colors
+      if (pixels.getUint8(i) == 0) {
+        final a = coordinates(i, image.width);
+        print('${a[0]}  ${a[1]}');
+        return a;
+      }
+    }
+
+    return [0, 0];
+  }
+
   Future<List<RecognizedElement>> recognizeText(
     Uint8List file,
     int width,
@@ -99,7 +171,10 @@ class AppProcessImages {
     return elements;
   }
 
-  double _getRadAngleCorrection(Offset a, Offset b) {
+  double _getRadAngleCorrection(
+    Offset a,
+    Offset b,
+  ) {
     final offsetBase = Offset(a.dx, a.dy);
     final offset1 = Offset(b.dx, b.dy);
     final offset2 = Offset(b.dx, a.dy);
