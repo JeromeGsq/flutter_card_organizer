@@ -66,6 +66,17 @@ class _ViewState extends State<View> {
             highlightColor: Colors.white30,
             splashColor: Colors.white30,
             child: const Icon(
+              Icons.scanner,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              viewModel.refresh();
+            },
+          ),
+          FlatButton(
+            highlightColor: Colors.white30,
+            splashColor: Colors.white30,
+            child: const Icon(
               Icons.straighten_outlined,
               color: Colors.white,
             ),

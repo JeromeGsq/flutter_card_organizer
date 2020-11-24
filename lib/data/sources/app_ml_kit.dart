@@ -14,11 +14,33 @@ import 'package:path_provider/path_provider.dart';
 class AppProcessImages {
   Future<Uint8List> crop(
     Uint8List file,
-    Rect rect,
+    RectPoint rectPoint,
   ) async {
+    const padding = 20;
+    final topLeft = Offset(
+      -padding +
+          (rectPoint.tl.dx < rectPoint.bl.dx
+              ? rectPoint.tl.dx
+              : rectPoint.bl.dx),
+      -padding +
+          (rectPoint.tl.dy < rectPoint.bl.dy
+              ? rectPoint.tl.dy
+              : rectPoint.bl.dy),
+    );
+    final bottomRight = Offset(
+      padding +
+          (rectPoint.tr.dx > rectPoint.br.dx
+              ? rectPoint.tr.dx
+              : rectPoint.br.dx),
+      padding +
+          (rectPoint.tr.dy > rectPoint.br.dy
+              ? rectPoint.tr.dy
+              : rectPoint.br.dy),
+    );
+
     final option = ImageEditorOption()
       ..addOption(
-        ClipOption.fromRect(rect),
+        ClipOption.fromRect(Rect.fromPoints(topLeft, bottomRight)),
       );
 
     final result = await ImageEditor.editImage(
@@ -31,28 +53,9 @@ class AppProcessImages {
 
   Future<Uint8List> rotate(
     Uint8List file,
-    List<RecognizedElement> recognizedElements,
+    RectPoint rectPoint,
   ) async {
-    final List<Offset> ps = [];
-    for (RecognizedElement element in recognizedElements) {
-      ps.addAll(element.cornerPoints);
-    }
-
-    double middle = 0;
-    double adder = 0;
-
-    for (var i = 0; i < ps.length - 1; i = i = i + 2) {
-      final a = _getRadAngleCorrection(ps[i], ps[i + 1]);
-      if (a != 0) {
-        adder++;
-        if (middle == 0) {
-          middle = a;
-        } else {
-          middle += a;
-        }
-      }
-    }
-    final angle = middle / adder;
+    final angle = _getRadAngleCorrection(rectPoint.tl, rectPoint.tr);
 
     final option = ImageEditorOption()
       ..addOption(
@@ -69,9 +72,21 @@ class AppProcessImages {
 
   Future<RectPoint> getRect(
     String path,
+    int width,
+    int height,
   ) async {
     final rectPoint = await FlutterSmartCropper.detectImageRect(path);
-    print(rectPoint);
+    if (height > width) {
+      final tl = rectPoint.tl;
+      final tr = rectPoint.tr;
+      final bl = rectPoint.bl;
+      final br = rectPoint.br;
+      rectPoint.tl = Offset(width - tl.dy, tl.dx);
+      rectPoint.tr = Offset(width - tr.dy, tr.dx);
+      rectPoint.bl = Offset(width - bl.dy, bl.dx);
+      rectPoint.br = Offset(width - br.dy, br.dx);
+    }
+
     return rectPoint;
   }
 

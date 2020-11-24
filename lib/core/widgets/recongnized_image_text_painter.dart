@@ -63,10 +63,12 @@ class RecongnizedImageTextPainter extends CustomPainter {
       canvas.drawRect(element.boundingBox, outline);
     }
 
-    canvas.drawLine(rectPoint.tl, rectPoint.tr, lines);
-    canvas.drawLine(rectPoint.tr, rectPoint.br, lines);
-    canvas.drawLine(rectPoint.br, rectPoint.bl, lines);
-    canvas.drawLine(rectPoint.bl, rectPoint.tl, lines);
+    if (rectPoint != null) {
+      canvas.drawLine(rectPoint.tl, rectPoint.tr, lines);
+      canvas.drawLine(rectPoint.tr, rectPoint.br, lines);
+      canvas.drawLine(rectPoint.br, rectPoint.bl, lines);
+      canvas.drawLine(rectPoint.bl, rectPoint.tl, lines);
+    }
   }
 
   @override
