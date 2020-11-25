@@ -11,12 +11,14 @@ class RecongnizedImageTextPainter extends CustomPainter {
     @required this.image,
     @required this.recognizedElements,
     @required this.rectPoint,
+    @required this.onTextPressed,
   });
 
   final BuildContext context;
   final ui.Image image;
   final List<RecognizedElement> recognizedElements;
   final RectPoint rectPoint;
+  final ValueChanged<String> onTextPressed;
 
   final imagePainter = Paint();
 
@@ -27,15 +29,14 @@ class RecongnizedImageTextPainter extends CustomPainter {
     ..style = PaintingStyle.stroke;
 
   final lines = Paint()
-    ..color = Colors.red
+    ..color = Colors.purpleAccent
     ..isAntiAlias = true
-    ..strokeWidth = 1
-    ..style = PaintingStyle.stroke;
+    ..strokeWidth = 10;
 
   final points = Paint()
-    ..color = Colors.indigoAccent
+    ..color = Colors.redAccent
     ..isAntiAlias = true
-    ..strokeWidth = 2
+    ..strokeWidth = 10
     ..style = PaintingStyle.stroke;
 
   final fill = Paint()
@@ -49,6 +50,7 @@ class RecongnizedImageTextPainter extends CustomPainter {
     for (RecognizedElement element in recognizedElements) {
       if (element.boundingBox.contains(position)) {
         print(element.text);
+        onTextPressed(element.text);
       }
     }
     return false;

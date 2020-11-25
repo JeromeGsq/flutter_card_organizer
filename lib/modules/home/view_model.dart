@@ -39,6 +39,15 @@ class HomeViewModel extends ViewModel {
     }
   }
 
+  String _text = '';
+  String get text => _text;
+  set text(String value) {
+    if (_text != value) {
+      _text = value;
+      notifyListeners();
+    }
+  }
+
   Future<void> generateAssetsImagesInPath({
     String imageName = '1.jpg',
   }) async {
@@ -114,6 +123,9 @@ class HomeViewModel extends ViewModel {
       );
 
       await data.copy(path);
+      _rectPoint = null;
+      _recognizedElements = [];
+
       notifyListeners();
     } catch (e) {
       print(e);
