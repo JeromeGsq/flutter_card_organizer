@@ -4,12 +4,12 @@ import 'dart:typed_data';
 
 import 'package:firebase_ml_vision/firebase_ml_vision.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
 import 'package:flutter_smart_cropper/flutter_smart_cropper.dart';
+import 'package:image/image.dart';
 import 'package:image_editor/image_editor.dart';
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:opencv/core/imgproc.dart';
+import 'package:opencv/opencv.dart';
 
 class AppProcessImages {
   Future<File> crop(
@@ -89,36 +89,52 @@ class AppProcessImages {
   Future<File> unskew(
     String path,
     RectPoint rectPoint,
+    int resultWidth,
+    int resultHeight,
   ) async {
-    var a = rectPoint.tl;
-    var b = rectPoint.tr;
-    var c = rectPoint.br;
-    var d = rectPoint.bl;
+    final destinationPoints = [
+      //TL
+      0,
+      0,
+      //TR
+      resultWidth,
+      0,
+      //BL
+      0,
+      resultHeight,
+      //BR
+      resultWidth,
+      resultHeight
+    ];
 
-    double C = (a.dy - p.dy) * (d.dx - p.dx) - (a.dx - p.dx) * (d.dy - p.dy);
-    double B = (a.dy - p.dy) * (c.dx - d.dx) +
-        (b.dy - a.dy) * (d.dx - p.dx) -
-        (a.dx - p.dx) * (c.dy - d.dy) -
-        (b.dx - a.dx) * (d.dy - p.dy);
-    double A = (b.dy - a.dy) * (c.dx - d.dx) - (b.dx - a.dx) * (c.dy - d.dy);
+    final outputSize = [
+      resultWidth.toDouble(),
+      resultHeight.toDouble(),
+    ];
 
-    double D = B * B - 4 * A * C;
-
-    double u = (-B - Math.Sqrt(D)) / (2 * A);
-
-    double p1x = a.dx + (b.dx - a.dx) * u;
-    double p2x = d.dx + (c.dx - d.dx) * u;
-    double px = p.dx;
-
-    double v = (px - p1x) / (p2x - p1x);
-
-    final option = ImageEditorOption();
-    final result = await ImageEditor.editFileImageAndGetFile(
-      file: File(path),
-      imageEditorOption: option,
+    final res = await ImgProc.warpPerspectiveTransform(
+      await File(path).readAsBytes(),
+      sourcePoints: [
+        //TL
+        rectPoint.tl.dx.toInt(),
+        rectPoint.tl.dy.toInt(),
+        //TR
+        rectPoint.tr.dx.toInt(),
+        rectPoint.tr.dy.toInt(),
+        //BL
+        rectPoint.bl.dx.toInt(),
+        rectPoint.bl.dy.toInt(),
+        //BR
+        rectPoint.br.dx.toInt(),
+        rectPoint.br.dy.toInt(),
+      ],
+      destinationPoints: destinationPoints,
+      outputSize: outputSize,
     );
 
-    return result;
+    final data = res as Uint8List;
+    final file = await saveImage(data, path);
+    return file;
   }
 
   Future<RectPoint> getRect(
@@ -129,18 +145,9 @@ class AppProcessImages {
       );
 
   Future<List<RecognizedElement>> recognizeText(
-    Uint8List file,
-    int width,
-    int height,
+    String path,
   ) async {
-    if (file == null) {
-      throw Exception('imageFile is null');
-    }
-    final directory = await getApplicationDocumentsDirectory();
-    final imgFile = File(join(directory.path, 'temp.jpg'));
-    imgFile.writeAsBytesSync(file);
-
-    final visionImage = FirebaseVisionImage.fromFile(imgFile);
+    final visionImage = FirebaseVisionImage.fromFile(File(path));
     final textRecognizer = FirebaseVision.instance.textRecognizer();
     final visionText = await textRecognizer.processImage(visionImage);
 
@@ -197,5 +204,12 @@ class AppProcessImages {
     min ??= value;
     max ??= value;
     return value < min ? min : (value > max ? max : value);
+  }
+
+  Future<File> saveImage(Uint8List data, String path) async {
+    final image = decodeImage(data);
+    final file = File(path);
+    file.writeAsBytes(encodePng(image));
+    return file;
   }
 }

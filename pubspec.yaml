@@ -25,6 +25,7 @@ dependencies:
   image_editor: ^0.7.3
   image_size_getter: ^0.2.1
   flutter_smart_cropper: ^0.1.2
+  opencv: ^1.0.4
 
   firebase_core: ^0.5.2
   firebase_ml_vision: ^0.9.9  

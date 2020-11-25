@@ -42,17 +42,19 @@ class HomeViewModel extends ViewModel {
   Future<void> generateAssetsImagesInPath({
     String imageName = '1.jpg',
   }) async {
-    final byteData = await rootBundle.load('assets/$imageName');
+    recognizedElements = [];
+    rectPoint = null;
+    path = null;
 
-    final tempPath = '${(await getTemporaryDirectory()).path}/$imageName';
+    final byteData = await rootBundle.load('assets/$imageName');
+    final tempPath = '${(await getExternalStorageDirectory()).path}/$imageName';
+
     final file = File(tempPath);
     try {
       await file.create();
     } catch (e) {
       await file.delete();
       await file.create();
-
-      print(e);
     }
     await file.writeAsBytes(
       byteData.buffer.asUint8List(
@@ -104,12 +106,29 @@ class HomeViewModel extends ViewModel {
   Future<void> unskew() async {
     try {
       rectPoint = await appProcessImages.getRect(path);
-      final data = await appProcessImages.unskew(path, rectPoint);
+      final data = await appProcessImages.unskew(
+        path,
+        rectPoint,
+        686,
+        1000,
+      );
 
       await data.copy(path);
       notifyListeners();
     } catch (e) {
       print(e);
     }
+  }
+
+  Future<void> processImage() async {
+    recognizedElements = [];
+    recognizedElements = await appProcessImages.recognizeText(path);
+  }
+
+  void clear() {
+    _path = null;
+    _recognizedElements = [];
+    _rectPoint = null;
+    notifyListeners();
   }
 }

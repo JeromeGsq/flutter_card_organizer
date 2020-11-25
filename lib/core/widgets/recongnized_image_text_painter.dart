@@ -29,13 +29,13 @@ class RecongnizedImageTextPainter extends CustomPainter {
   final lines = Paint()
     ..color = Colors.red
     ..isAntiAlias = true
-    ..strokeWidth = 20
+    ..strokeWidth = 1
     ..style = PaintingStyle.stroke;
 
   final points = Paint()
     ..color = Colors.indigoAccent
     ..isAntiAlias = true
-    ..strokeWidth = 60
+    ..strokeWidth = 2
     ..style = PaintingStyle.stroke;
 
   final fill = Paint()
@@ -49,7 +49,6 @@ class RecongnizedImageTextPainter extends CustomPainter {
     for (RecognizedElement element in recognizedElements) {
       if (element.boundingBox.contains(position)) {
         print(element.text);
-        break;
       }
     }
     return false;

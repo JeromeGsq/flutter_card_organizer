@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:vector_math/vector_math_64.dart' as vector;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -47,19 +46,17 @@ class _ViewState extends State<View> {
     final viewModel = Provider.of<HomeViewModel>(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         actions: [
           FlatButton(
             highlightColor: Colors.white30,
             splashColor: Colors.white30,
             child: const Icon(
-              Icons.straighten_outlined,
+              Icons.phonelink_erase_rounded,
               color: Colors.white,
             ),
-            onPressed: () async {
-              await viewModel.detectEdges();
-            },
+            onPressed: () => viewModel.clear(),
           ),
         ],
       ),
@@ -68,7 +65,7 @@ class _ViewState extends State<View> {
           Center(
             child: viewModel.path == null
                 ? const Text(
-                    'Select a picture to scan.',
+                    'Select a picture to scan',
                     style: TextStyle(color: Colors.white),
                   )
                 : FutureBuilder<ui.Image>(
@@ -76,27 +73,18 @@ class _ViewState extends State<View> {
                     future: _getUiImage(viewModel.path),
                     builder: (_, value) {
                       return value.data == null
-                          ? const SizedBox()
+                          ? const CircularProgressIndicator()
                           : InteractiveViewer(
                               boundaryMargin: const EdgeInsets.all(40),
                               minScale: 0.1,
                               constrained: false,
                               child: Transform.scale(
-                                scale: 0.2,
-                                child: Transform(
-                                  transform: Matrix4.identity()
-                                    ..perspectiveTransform(
-                                      vector.Vector3(1, 1, 0),
-                                    ),
-                                  child: Transform.rotate(
-                                    angle: 0,
-                                    child: TextLabeledImage(
-                                      image: value.data,
-                                      recognizedElements:
-                                          viewModel.recognizedElements,
-                                      rectPoint: viewModel.rectPoint,
-                                    ),
-                                  ),
+                                scale: 0.9,
+                                child: TextLabeledImage(
+                                  image: value.data,
+                                  recognizedElements:
+                                      viewModel.recognizedElements,
+                                  rectPoint: viewModel.rectPoint,
                                 ),
                               ),
                             );
@@ -115,21 +103,15 @@ class _ViewState extends State<View> {
                   },
                 ),
                 AppButton(
-                  text: 'Crop',
-                  onPressed: () async {
-                    await viewModel.crop();
-                  },
-                ),
-                AppButton(
-                  text: 'Rotate',
-                  onPressed: () async {
-                    await viewModel.rotate();
-                  },
-                ),
-                AppButton(
                   text: 'Skew',
                   onPressed: () async {
                     await viewModel.unskew();
+                  },
+                ),
+                AppButton(
+                  text: 'Text',
+                  onPressed: () async {
+                    await viewModel.processImage();
                   },
                 ),
               ],
