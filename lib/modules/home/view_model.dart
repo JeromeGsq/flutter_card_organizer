@@ -1,11 +1,12 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_card_organizer/core/view_model.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
 import 'package:flutter_card_organizer/data/sources/app_ml_kit.dart';
 import 'package:flutter_smart_cropper/flutter_smart_cropper.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'package:image_size_getter/image_size_getter.dart';
 import 'package:path_provider/path_provider.dart';
 
 class HomeViewModel extends ViewModel {
@@ -18,29 +19,6 @@ class HomeViewModel extends ViewModel {
       _path = value;
       notifyListeners();
     }
-  }
-
-  Uint8List _picture;
-  Uint8List get picture => _picture;
-  set picture(Uint8List value) {
-    if (_picture != value) {
-      recognizedElements = [];
-      _picture = value;
-      _loadImage();
-      notifyListeners();
-    }
-  }
-
-  Image _image;
-  Image get image => _image;
-  Future<void> _loadImage() async {
-    if (picture == null) {
-      return;
-    }
-    decodeImageFromList(picture, (result) {
-      _image = result;
-      notifyListeners();
-    });
   }
 
   RectPoint _rectPoint;
@@ -61,26 +39,77 @@ class HomeViewModel extends ViewModel {
     }
   }
 
-  Future<void> processImage() async {
-    path = '${(await getTemporaryDirectory()).path}/temp.jpg';
-    final file = File(path)..createSync();
-    await file.writeAsBytes(picture);
-    picture = File(path).readAsBytesSync();
+  Future<void> generateAssetsImagesInPath({
+    String imageName = '1.jpg',
+  }) async {
+    final byteData = await rootBundle.load('assets/$imageName');
 
-    rectPoint = await appProcessImages.getRect(path, image.width, image.height);
-    picture = await appProcessImages.crop(picture, rectPoint);
+    final tempPath = '${(await getTemporaryDirectory()).path}/$imageName';
+    final file = File(tempPath);
+    try {
+      await file.create();
+    } catch (e) {
+      await file.delete();
+      await file.create();
 
-    // rectPoint = await appProcessImages.getRect(path, image.width);
+      print(e);
+    }
+    await file.writeAsBytes(
+      byteData.buffer.asUint8List(
+        byteData.offsetInBytes,
+        byteData.lengthInBytes,
+      ),
+    );
 
-    // await Future.delayed(const Duration(seconds: 2), () {});
-    // rectPoint = await appProcessImages.getRect(path, image.width);
-
-    //  picture = await appProcessImages.rotate(picture, rectPoint);
+    path = tempPath;
   }
 
-  Future<void> refresh() async {
-    await File(path).writeAsBytes(picture);
+  Future<void> detectEdges() async {
+    rectPoint = await appProcessImages.getRect(path);
+    notifyListeners();
+  }
 
-    rectPoint = await appProcessImages.getRect(path, image.width, image.height);
+  Future<void> crop() async {
+    try {
+      final size = ImageSizeGetter.getSize(FileInput(File(path)));
+      rectPoint = await appProcessImages.getRect(path);
+
+      final data = await appProcessImages.crop(
+        path,
+        rectPoint,
+        size.width.toDouble(),
+        size.height.toDouble(),
+        padding: 100,
+      );
+
+      await data.copy(path);
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> rotate() async {
+    try {
+      rectPoint = await appProcessImages.getRect(path);
+      final data = await appProcessImages.rotate(path, rectPoint);
+
+      await data.copy(path);
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> unskew() async {
+    try {
+      rectPoint = await appProcessImages.getRect(path);
+      final data = await appProcessImages.unskew(path, rectPoint);
+
+      await data.copy(path);
+      notifyListeners();
+    } catch (e) {
+      print(e);
+    }
   }
 }

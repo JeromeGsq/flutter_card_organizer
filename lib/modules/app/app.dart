@@ -4,7 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_card_organizer/core/config/config.dart';
 import 'package:flutter_card_organizer/modules/app/app_providers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_card_organizer/modules/splash/view.dart';
+import 'package:flutter_card_organizer/modules/home/view.dart';
 import 'package:logging/logging.dart';
 
 class App extends StatefulWidget {
@@ -51,7 +51,7 @@ class _AppState extends State<App> {
       config: widget.config,
       child: MaterialApp(
         title: widget.config.appName,
-        home: const SplashView(),
+        home: const HomeView(),
       ),
     );
   }

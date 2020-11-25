@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
@@ -29,6 +30,12 @@ class RecongnizedImageTextPainter extends CustomPainter {
     ..color = Colors.red
     ..isAntiAlias = true
     ..strokeWidth = 20
+    ..style = PaintingStyle.stroke;
+
+  final points = Paint()
+    ..color = Colors.indigoAccent
+    ..isAntiAlias = true
+    ..strokeWidth = 60
     ..style = PaintingStyle.stroke;
 
   final fill = Paint()
@@ -68,6 +75,17 @@ class RecongnizedImageTextPainter extends CustomPainter {
       canvas.drawLine(rectPoint.tr, rectPoint.br, lines);
       canvas.drawLine(rectPoint.br, rectPoint.bl, lines);
       canvas.drawLine(rectPoint.bl, rectPoint.tl, lines);
+
+      canvas.drawPoints(
+        PointMode.points,
+        [
+          rectPoint.tl,
+          rectPoint.tr,
+          rectPoint.br,
+          rectPoint.bl,
+        ],
+        points,
+      );
     }
   }
 

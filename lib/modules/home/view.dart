@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:vector_math/vector_math_64.dart' as vector;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -6,10 +8,8 @@ import 'package:flutter_card_organizer/core/widgets/event_listener.dart';
 import 'package:flutter_card_organizer/core/widgets/recongnized_image_text_painter.dart';
 import 'package:flutter_card_organizer/data/models/recognized_element.dart';
 import 'package:flutter_card_organizer/data/sources/app_ml_kit.dart';
-import 'package:flutter_card_organizer/data/sources/file_picker.dart';
 import 'package:flutter_card_organizer/modules/home/view_model.dart';
 import 'package:flutter_smart_cropper/flutter_smart_cropper.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 class HomeView extends StatelessWidget {
@@ -45,34 +45,11 @@ class _ViewState extends State<View> {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<HomeViewModel>(context);
-    final filePicker = Provider.of<AppFilePicker>(context);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.grey,
       appBar: AppBar(
         actions: [
-          FlatButton(
-            highlightColor: Colors.white30,
-            splashColor: Colors.white30,
-            child: const Icon(
-              Icons.clear,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              viewModel.picture = null;
-            },
-          ),
-          FlatButton(
-            highlightColor: Colors.white30,
-            splashColor: Colors.white30,
-            child: const Icon(
-              Icons.scanner,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              viewModel.refresh();
-            },
-          ),
           FlatButton(
             highlightColor: Colors.white30,
             splashColor: Colors.white30,
@@ -81,40 +58,131 @@ class _ViewState extends State<View> {
               color: Colors.white,
             ),
             onPressed: () async {
-              await viewModel.processImage();
+              await viewModel.detectEdges();
             },
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add_photo_alternate),
-        tooltip: 'Select a picture to scan',
-        onPressed: () async {
-          final picture = await filePicker.pickPhoto();
-          viewModel.path = picture.path;
-          viewModel.picture = picture.readAsBytesSync();
-          if (viewModel.picture != null) {
-            Fluttertoast.showToast(
-              msg: 'You can zoom & pan your picture',
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-            );
-          }
-        },
-      ),
-      body: Center(
-        child: viewModel.picture == null
-            ? const Text('Select a picture to scan.')
-            : InteractiveViewer(
-                boundaryMargin: const EdgeInsets.all(40),
-                minScale: 0.1,
-                constrained: false,
-                child: TextLabeledImage(
-                  picture: viewModel.image,
-                  recognizedElements: viewModel.recognizedElements,
-                  rectPoint: viewModel.rectPoint,
+      body: Stack(
+        children: [
+          Center(
+            child: viewModel.path == null
+                ? const Text(
+                    'Select a picture to scan.',
+                    style: TextStyle(color: Colors.white),
+                  )
+                : FutureBuilder<ui.Image>(
+                    initialData: null,
+                    future: _getUiImage(viewModel.path),
+                    builder: (_, value) {
+                      return value.data == null
+                          ? const SizedBox()
+                          : InteractiveViewer(
+                              boundaryMargin: const EdgeInsets.all(40),
+                              minScale: 0.1,
+                              constrained: false,
+                              child: Transform.scale(
+                                scale: 0.2,
+                                child: Transform(
+                                  transform: Matrix4.identity()
+                                    ..perspectiveTransform(
+                                      vector.Vector3(1, 1, 0),
+                                    ),
+                                  child: Transform.rotate(
+                                    angle: 0,
+                                    child: TextLabeledImage(
+                                      image: value.data,
+                                      recognizedElements:
+                                          viewModel.recognizedElements,
+                                      rectPoint: viewModel.rectPoint,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                    },
+                  ),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                AppButton(
+                  text: 'Edges',
+                  onPressed: () async {
+                    await viewModel.detectEdges();
+                  },
                 ),
-              ),
+                AppButton(
+                  text: 'Crop',
+                  onPressed: () async {
+                    await viewModel.crop();
+                  },
+                ),
+                AppButton(
+                  text: 'Rotate',
+                  onPressed: () async {
+                    await viewModel.rotate();
+                  },
+                ),
+                AppButton(
+                  text: 'Skew',
+                  onPressed: () async {
+                    await viewModel.unskew();
+                  },
+                ),
+              ],
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                for (int i = 1; i <= 5; i++)
+                  AppButton(
+                    text: '$i',
+                    onPressed: () => viewModel.generateAssetsImagesInPath(
+                      imageName: '$i.jpg',
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<ui.Image> _getUiImage(
+    String imageAssetPath,
+  ) async {
+    final data = await File(imageAssetPath).readAsBytes();
+    final codec = await ui.instantiateImageCodec(data);
+    final frameInfo = await codec.getNextFrame();
+    return frameInfo.image;
+  }
+}
+
+class AppButton extends StatelessWidget {
+  const AppButton({
+    Key key,
+    @required this.text,
+    @required this.onPressed,
+  }) : super(key: key);
+
+  final String text;
+  final Function() onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 75,
+      child: MaterialButton(
+        color: Colors.blue,
+        child: Text('$text', style: const TextStyle(color: Colors.white)),
+        onPressed: onPressed,
       ),
     );
   }
@@ -123,12 +191,12 @@ class _ViewState extends State<View> {
 class TextLabeledImage extends StatelessWidget {
   const TextLabeledImage({
     Key key,
-    @required this.picture,
+    @required this.image,
     @required this.recognizedElements,
     @required this.rectPoint,
   }) : super(key: key);
 
-  final ui.Image picture;
+  final ui.Image image;
   final List<RecognizedElement> recognizedElements;
   final RectPoint rectPoint;
 
@@ -136,12 +204,12 @@ class TextLabeledImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(
-        picture?.width?.toDouble() ?? 0,
-        picture?.height?.toDouble() ?? 0,
+        image?.width?.toDouble() ?? 0,
+        image?.height?.toDouble() ?? 0,
       ),
       painter: RecongnizedImageTextPainter(
         context: context,
-        image: picture,
+        image: image,
         recognizedElements: recognizedElements,
         rectPoint: rectPoint,
       ),

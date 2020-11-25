@@ -12,58 +12,109 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AppProcessImages {
-  Future<Uint8List> crop(
-    Uint8List file,
+  Future<File> crop(
+    String path,
     RectPoint rectPoint,
-  ) async {
-    const padding = 20;
-    final topLeft = Offset(
-      -padding +
-          (rectPoint.tl.dx < rectPoint.bl.dx
-              ? rectPoint.tl.dx
-              : rectPoint.bl.dx),
-      -padding +
-          (rectPoint.tl.dy < rectPoint.bl.dy
-              ? rectPoint.tl.dy
-              : rectPoint.bl.dy),
+    double width,
+    double height, {
+    double padding = 20,
+  }) async {
+    final x = [
+      rectPoint.tl.dx,
+      rectPoint.bl.dx,
+      rectPoint.tr.dx,
+      rectPoint.br.dx
+    ];
+    final y = [
+      rectPoint.tl.dy,
+      rectPoint.bl.dy,
+      rectPoint.tr.dy,
+      rectPoint.br.dy
+    ];
+
+    var topLeft = Offset(
+      min(x),
+      min(y),
     );
-    final bottomRight = Offset(
-      padding +
-          (rectPoint.tr.dx > rectPoint.br.dx
-              ? rectPoint.tr.dx
-              : rectPoint.br.dx),
-      padding +
-          (rectPoint.tr.dy > rectPoint.br.dy
-              ? rectPoint.tr.dy
-              : rectPoint.br.dy),
+    var bottomRight = Offset(
+      max(x),
+      max(y),
+    );
+
+    topLeft = Offset(
+      clamp(topLeft.dx - padding, min: 0),
+      clamp(topLeft.dy - padding, min: 0),
+    );
+    bottomRight = Offset(
+      clamp(bottomRight.dx + padding, max: width),
+      clamp(bottomRight.dy + padding, max: height),
     );
 
     final option = ImageEditorOption()
       ..addOption(
-        ClipOption.fromRect(Rect.fromPoints(topLeft, bottomRight)),
+        ClipOption.fromOffset(topLeft, bottomRight),
       );
 
-    final result = await ImageEditor.editImage(
-      image: file,
+    final result = await ImageEditor.editFileImageAndGetFile(
+      file: File(path),
       imageEditorOption: option,
     );
 
     return result;
   }
 
-  Future<Uint8List> rotate(
-    Uint8List file,
+  Future<File> rotate(
+    String path,
     RectPoint rectPoint,
   ) async {
-    final angle = _getRadAngleCorrection(rectPoint.tl, rectPoint.tr);
+    var angle = _getRadAngleCorrection(rectPoint.tl, rectPoint.tr);
+
+    if (rectPoint.tl.dy < rectPoint.tr.dy) {
+      angle = -angle;
+    } else {}
 
     final option = ImageEditorOption()
       ..addOption(
         RotateOption.radian(angle),
       );
 
-    final result = await ImageEditor.editImage(
-      image: file,
+    final result = await ImageEditor.editFileImageAndGetFile(
+      file: File(path),
+      imageEditorOption: option,
+    );
+
+    return result;
+  }
+
+  Future<File> unskew(
+    String path,
+    RectPoint rectPoint,
+  ) async {
+    var a = rectPoint.tl;
+    var b = rectPoint.tr;
+    var c = rectPoint.br;
+    var d = rectPoint.bl;
+
+    double C = (a.dy - p.dy) * (d.dx - p.dx) - (a.dx - p.dx) * (d.dy - p.dy);
+    double B = (a.dy - p.dy) * (c.dx - d.dx) +
+        (b.dy - a.dy) * (d.dx - p.dx) -
+        (a.dx - p.dx) * (c.dy - d.dy) -
+        (b.dx - a.dx) * (d.dy - p.dy);
+    double A = (b.dy - a.dy) * (c.dx - d.dx) - (b.dx - a.dx) * (c.dy - d.dy);
+
+    double D = B * B - 4 * A * C;
+
+    double u = (-B - Math.Sqrt(D)) / (2 * A);
+
+    double p1x = a.dx + (b.dx - a.dx) * u;
+    double p2x = d.dx + (c.dx - d.dx) * u;
+    double px = p.dx;
+
+    double v = (px - p1x) / (p2x - p1x);
+
+    final option = ImageEditorOption();
+    final result = await ImageEditor.editFileImageAndGetFile(
+      file: File(path),
       imageEditorOption: option,
     );
 
@@ -72,23 +123,10 @@ class AppProcessImages {
 
   Future<RectPoint> getRect(
     String path,
-    int width,
-    int height,
-  ) async {
-    final rectPoint = await FlutterSmartCropper.detectImageRect(path);
-    if (height > width) {
-      final tl = rectPoint.tl;
-      final tr = rectPoint.tr;
-      final bl = rectPoint.bl;
-      final br = rectPoint.br;
-      rectPoint.tl = Offset(width - tl.dy, tl.dx);
-      rectPoint.tr = Offset(width - tr.dy, tr.dx);
-      rectPoint.bl = Offset(width - bl.dy, bl.dx);
-      rectPoint.br = Offset(width - br.dy, br.dx);
-    }
-
-    return rectPoint;
-  }
+  ) async =>
+      FlutterSmartCropper.detectImageRect(
+        path,
+      );
 
   Future<List<RecognizedElement>> recognizeText(
     Uint8List file,
@@ -135,10 +173,29 @@ class AppProcessImages {
     final offset1 = Offset(b.dx, b.dy);
     final offset2 = Offset(b.dx, a.dy);
 
-    final result =
-        math.atan2(offset1.dy - offsetBase.dy, offset1.dx - offsetBase.dx) -
-            math.atan2(offset2.dy - offsetBase.dy, offset2.dx - offsetBase.dx);
+    final result = math.atan2(
+          offset1.dy - offsetBase.dy,
+          offset1.dx - offsetBase.dx,
+        ) -
+        math.atan2(
+          offset2.dy - offsetBase.dy,
+          offset2.dx - offsetBase.dx,
+        );
 
     return result < 0 ? result * -1 : result;
+  }
+
+  double min(List<double> values) {
+    return values.reduce(math.min);
+  }
+
+  double max(List<double> values) {
+    return values.reduce(math.max);
+  }
+
+  double clamp(double value, {double min, double max}) {
+    min ??= value;
+    max ??= value;
+    return value < min ? min : (value > max ? max : value);
   }
 }
